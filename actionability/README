@@ -1,0 +1,13 @@
+You'll need an embeddings file to get started. The pre-built models use this one:
+
+  www.derczynski.com/2014.20M.tok.vectors.25.txt.bz2
+
+Decompress the embeddings file first.
+
+Feature generation: embprox.py <textfile>, which expects files to have the name actionability.[letter].train
+
+Classification: predict.py <model file> <featurefile>
+
+Model training: build-model.py <featurefile>
+
+Evaluation & development: see xeval.py

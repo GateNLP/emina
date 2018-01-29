@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # one param: featurefile
 
+import argparse
 import numpy as np
 import sys
 
@@ -26,21 +27,23 @@ from sklearn.externals import joblib
 
 import sklearn.metrics
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--featurefilename', help='Path to the sklearn model file used', required=True)
+opts = parser.parse_args()
+
+
 scoring = ['precision_micro', 'recall_micro', 'f1_micro']
 scoring = {'prec_macro': 'precision_macro',
            'rec_micro': metrics.scorer.make_scorer(metrics.recall_score, average='micro')}
 
-featurefilename = sys.argv[1]
-
-d = np.loadtxt(featurefilename)
+d = np.loadtxt(opts.featurefilename)
 X = d[:, 1:]
 y = d[:, 0]
 
 clf = SVC(gamma=3, C=20, class_weight='balanced')
 
 
-print('Fitting')
-print(clf)
+print('Fitting', clf)
 print('Features from', sys.argv[1])
 clf.fit(X, y)
 outfilename = featurefilename.replace('features', 'model') + '.svm.rbf'

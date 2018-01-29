@@ -2,6 +2,7 @@
 # returns lines of a text file that classify as actionable
 # usage: predict <model> <textfile>
 
+import argparse
 import numpy as np
 import sys
 
@@ -26,24 +27,30 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 from sklearn.externals import joblib
 
-from embprox import Embprox
+from embprox import Embprox, default_embeddings_file
 
-modelfilename = sys.argv[1]
-textfilename = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument('--modelfilename', help='Path to the sklearn model file used', required=True)
+parser.add_argument('--inputfilename', help='Path to the text file of instances to predict actionability of (one message per line)', required=True)
+parser.add_argument('--embeddings', help='Embeddings file name (in text format)', default=default_embeddings_file, action='store')
+parser.add_argument('--prefix', help='The filename prefix for reading from', default='actionability')
+parser.add_argument('--keywords', help='Keywords file', default='keywords')
+parser.add_argument('--threshold', help='Decision threshold', default=0.5, type=float)
+opts = parser.parse_args()
 
 
-clf = joblib.load(modelfilename)
+clf = joblib.load(opts.modelfilename)
 
-letter = modelfilename.replace('actionability.', '')[0]
+letter = opts.modelfilename.replace(opts.prefix+'.', '')[0]
 
 featuregen = Embprox()
-featuregen.load_keywords('keywords')
-featuregen.load_embeddings('/home/leon/gate-extras/gate-twitter/docs/drift-is-a-thing/representations/socmed/2014.20M.tok.vectors.25.txt')
+featuregen.load_keywords(opts.keywords)
+featuregen.load_embeddings(featuregen.default_embeddings_file)
 
-for line in open(textfilename):
+for line in open(opts.inputfilename):
     line = line.strip()
     t = featuregen.process_text(line)
     f = np.array(featuregen.wordlist2weights(t, letter))
     pred = clf.predict(f.reshape(1,-1))
-    if pred > 0.5:
+    if pred > opts.threshold:
         print(line)

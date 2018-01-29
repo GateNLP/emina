@@ -13,7 +13,6 @@ from sklearn.model_selection import cross_validate
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.datasets import make_moons, make_circles, make_classification
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -97,4 +96,4 @@ best_clf.fit(X, y)
 
 outfilename = opts.featurefilename.replace('features', 'model') + '.classifier'
 print('Saving to', outfilename)
-joblib.dump(clf, outfilename)
+joblib.dump(best_clf, outfilename)

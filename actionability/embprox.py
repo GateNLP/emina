@@ -16,6 +16,23 @@ from gensim.models.keyedvectors import KeyedVectors
 sys.path.append('twokenize/')
 from twokenize_wrapper import tokenize
 
+def download_embeddings(url='http://www.derczynski.com/sheffield/resources/2014.20M.tok.vectors.25.txt.bz2'):
+    import os 
+    import requests
+    print('downloading from', url)
+    r = requests.get(url, allow_redirects=True)
+    dest = url.split('/')[-1]
+    open(dest, 'wb').write(r.content)
+    if url.endswith('.bz2'):
+        import bz2
+        b = bz2.BZ2File(dest)
+        f = open(dest.replace('.bz2', ''), 'wb')
+        f.write(b.read())
+        f.close()
+        b.close()
+        os.unlink(dest)
+
+
 class Embprox:
 
     sim_thresh = 0.45
@@ -68,7 +85,10 @@ if __name__ == "__main__":
 
     featuregen = Embprox()
     featuregen.load_keywords('keywords')
-    featuregen.load_embeddings('2014.20M.tok.vectors.25.txt')
+    embeddingsfilename = '2014.20M.tok.vectors.25.txt'
+    if not os.path.isfile(embeddingsfilename):
+        download_embeddings()
+    featuregen.load_embeddings(embeddingsfilename)
 
     letterstring = 'ADFGIJMNY'
     if len(sys.argv) > 1:
@@ -84,7 +104,10 @@ if __name__ == "__main__":
         positive_tokens = list(map(featuregen.process_text, positive))
         negative_tokens = list(map(featuregen.process_text, negative))
 
-        outfile = open('actionability.'+letter+'.features.sim'+str(featuregen.sim_thresh).replace('.', '_'), 'w')
+        outfilename = 'actionability.'+letter+'.features.sim'+str(featuregen.sim_thresh).replace('.', '_')
+        if not matched:
+            outfilename += '.unmatched'
+        outfile = open(outfilename, 'w')
 
         for wordlist in positive_tokens:
             weights = featuregen.wordlist2weights(wordlist, letter)

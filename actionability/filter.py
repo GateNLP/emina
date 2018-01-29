@@ -4,6 +4,7 @@
 
 import argparse
 import numpy as np
+import os
 import sys
 
 from sklearn import metrics
@@ -40,11 +41,13 @@ opts = parser.parse_args()
 
 clf = joblib.load(opts.modelfilename)
 
-letter = opts.modelfilename.replace(opts.prefix+'.', '')[0]
+letter = opts.modelfilename.split('/')[-1].replace(opts.prefix+'.', '')[0]
 
 featuregen = Embprox()
 featuregen.load_keywords(opts.keywords)
-featuregen.load_embeddings(featuregen.default_embeddings_file)
+if not os.path.isfile(opts.embeddings) and opts.embeddings == default_embeddings_file:
+    featuregen.download_embeddings()
+featuregen.load_embeddings(opts.embeddings)
 
 for line in open(opts.inputfilename):
     line = line.strip()

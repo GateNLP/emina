@@ -17,20 +17,6 @@ from twokenize_wrapper import tokenize
 
 default_embeddings_file = '2014.20M.tok.vectors.25.txt'
 
-def download_embeddings(url='http://www.derczynski.com/sheffield/resources/'+default_embeddings_file+'.bz2'):
-    import requests
-    print('downloading from', url)
-    r = requests.get(url, allow_redirects=True)
-    dest = url.split('/')[-1]
-    open(dest, 'wb').write(r.content)
-    if url.endswith('.bz2'):
-        import bz2
-        b = bz2.BZ2File(dest)
-        f = open(dest.replace('.bz2', ''), 'wb')
-        f.write(b.read())
-        f.close()
-        b.close()
-        os.unlink(dest)
 
 class Embprox:
 
@@ -40,6 +26,21 @@ class Embprox:
     close_a = r'</a>'
     kw = {}
     emb = None
+
+    def download_embeddings(url='http://www.derczynski.com/sheffield/resources/'+default_embeddings_file+'.bz2'):
+        import requests
+        print('downloading from', url)
+        r = requests.get(url, allow_redirects=True)
+        dest = url.split('/')[-1]
+        open(dest, 'wb').write(r.content)
+        if url.endswith('.bz2'):
+            import bz2
+            b = bz2.BZ2File(dest)
+            f = open(dest.replace('.bz2', ''), 'wb')
+            f.write(b.read())
+            f.close()
+            b.close()
+            os.unlink(dest)
 
     def process_text(self, sentence):
         sentence = sentence.strip()
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     featuregen = Embprox()
     featuregen.load_keywords('keywords')
     if not os.path.isfile(opts.embeddings) and opts.embeddings == default_embeddings_file:
-        download_embeddings()
+        featuregen.download_embeddings()
     featuregen.load_embeddings(opts.embeddings)
 
     featuregen.sim_thresh = opts.threshold
